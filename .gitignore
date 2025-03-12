@@ -1,0 +1,6 @@
+.pio
+build
+.vscode
+.cache
+logs
+.DS_Store
