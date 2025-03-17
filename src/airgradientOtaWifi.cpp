@@ -5,16 +5,15 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
-#include "common.h"
+// #include "common.h"
+#include "Libraries/airgradient-client/src/common.h"
+
 #include "airgradientOtaWifi.h"
 #include "airgradientOta.h"
 
 AirgradientOTAWifi::AirgradientOTAWifi() {}
 
-AirgradientOTAWifi::~AirgradientOTAWifi() {
-  // Just sanity check
-  esp_http_client_cleanup(_httpClient);
-}
+AirgradientOTAWifi::~AirgradientOTAWifi() {}
 
 AirgradientOTA::OtaResult
 AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &currentFirmware) {
@@ -44,10 +43,12 @@ AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &
   if (statusCode == 304) {
     ESP_LOGI(TAG, "Firmware is already up to date");
     cleanupHttp(_httpClient);
+    sendCallback(AlreadyUpToDate, "");
     return AlreadyUpToDate;
   } else if (statusCode != 200) {
     ESP_LOGW(TAG, "Firmware update skipped, the server returned %d", statusCode);
     cleanupHttp(_httpClient);
+    sendCallback(Skipped, "");
     return Skipped;
   }
 
