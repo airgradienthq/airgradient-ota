@@ -27,11 +27,11 @@ void AirgradientOTA::sendCallback(OtaResult result, const char *message) {
 }
 
 std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &currentFirmware) {
-  // "http://hw.airgradient.com/sensors/airgradient:aabbccddeeff/one/firmware.bin?offset=386000&length=2000"
+  // "http://hw.airgradient.com/sensors/airgradient:aabbccddeeff/generic/os/firmware.bin?offset=386000&length=2000"
   // NOTE: Careful here when changing the url
   char url[120] = {0};
   sprintf(url,
-          "http://hw.airgradient.com/sensors/airgradient:%s/one/firmware.bin?current_firmware=%s",
+          "http://hw.airgradient.com/sensors/airgradient:%s/generic/os/firmware.bin?current_firmware=%s",
           sn.c_str(), currentFirmware.c_str());
 
   return std::string(url);
