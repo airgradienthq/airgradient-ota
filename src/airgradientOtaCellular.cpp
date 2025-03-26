@@ -47,14 +47,15 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   int imageOffset = 0;
 
   // TODO: Call http HEAD method to know total image length if needed
-  int totalImageSize = 1200000; // NOTE: This is assumption 1.2mb
+  int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb
+
 
   ESP_LOGI(TAG, "Wait OTA until finish");
   unsigned long downloadStartTime = MILLIS();
   while (true) {
     // Build build url with chunk param and attempt download chunk image
     buildParams(imageOffset, urlBuffer);
-    ESP_LOGD(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
+    ESP_LOGI(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
 
     if (imageOffset == 0) {
       // Notify caller that ota is starting
@@ -87,10 +88,12 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
       if (response.data.bodyLen < CHUNK_SIZE) {
         ESP_LOGI(TAG, "Received remainder chunk (size: %d), applying image...",
                  response.data.bodyLen);
+        sendCallback(InProgress, "100"); // Send finish indicatation
         break;
       }
     } else if (response.data.statusCode == 204) {
       ESP_LOGI(TAG, "Download image binary complete, applying image...");
+      sendCallback(InProgress, "100"); // Send finish indicatation
       break;
     } else if (response.data.statusCode == 304) {
       ESP_LOGI(TAG, "Firmware is already up to date");
@@ -104,7 +107,11 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
 
     // Send callback
     int percent = (imageWritten * 100) / totalImageSize;
-    sendCallback(InProgress, std::to_string(percent).c_str());
+    if (percent < 96) {
+      // Because not knowing the exact image, then only send callback < 96 to
+      // avoid send percentage more than 100%
+      sendCallback(InProgress, std::to_string(percent).c_str());
+    }
 
     // Increment image offset to download
     imageOffset = imageOffset + CHUNK_SIZE;
