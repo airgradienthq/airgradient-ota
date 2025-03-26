@@ -8,10 +8,13 @@
 #ifndef AIRGRADIENT_OTA_CELLULAR_H
 #define AIRGRADIENT_OTA_CELLULAR_H
 
+#ifndef ESP8266
 #include <string>
 
+#ifdef ARDUINO
 //! Somehow if compile using arduino and not include this. esp_log not come out.
 #include <Arduino.h>
+#endif
 
 #include "Libraries/airgradient-client/src/cellularModule.h"
 // #include "cellularModule.h"
@@ -36,4 +39,5 @@ private:
   void buildParams(int offset, char *output);
 };
 
+#endif // ESP8266
 #endif // !AIRGRADIENT_OTA_CELLULAR_H

@@ -5,6 +5,8 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
+#ifndef ESP8266
+
 #include "airgradientOta.h"
 
 #include "esp_log.h"
@@ -102,3 +104,5 @@ void AirgradientOTA::abort() {
   esp_ota_abort(_otaHandle);
   ESP_LOGI(TAG, "OTA Aborted");
 }
+
+#endif // ESP8266

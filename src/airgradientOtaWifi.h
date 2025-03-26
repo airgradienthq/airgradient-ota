@@ -8,13 +8,16 @@
 #ifndef AIRGRADIENT_OTA_WIFI_H
 #define AIRGRADIENT_OTA_WIFI_H
 
+#ifndef ESP8266
+
 #include <string>
 
+#ifdef ARDUINO
 //! Somehow if compile using arduino and not include this. esp_log not come out.
 #include <Arduino.h>
+#endif
 
 #include "esp_http_client.h"
-#include "esp_log.h"
 
 #include "airgradientOta.h"
 
@@ -35,4 +38,6 @@ private:
   OtaResult processImage();
   void cleanupHttp(esp_http_client_handle_t client);
 };
+
+#endif // ESP8266
 #endif // !AIRGRADIENT_OTA_WIFI_H

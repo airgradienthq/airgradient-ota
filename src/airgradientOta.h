@@ -8,11 +8,15 @@
 #ifndef AIRGRADIENT_OTA_H
 #define AIRGRADIENT_OTA_H
 
+#ifndef ESP8266
+
 #include <cstdint>
 #include <string>
 
+#ifdef ARDUINO
 //! Somehow if compile using pio and not include this. esp_log not come out.
 #include <Arduino.h>
+#endif
 
 #include "esp_ota_ops.h"
 
@@ -50,4 +54,5 @@ protected:
   void abort();
 };
 
+#endif // ESP8266
 #endif // AIRGRADIENT_OTA_H

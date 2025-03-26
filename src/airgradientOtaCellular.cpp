@@ -5,6 +5,8 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
+#ifndef ESP8266
+
 #include <cstring>
 #include <string>
 
@@ -150,3 +152,5 @@ void AirgradientOTACellular::buildParams(int offset, char *output) {
   // Format the enpoint
   snprintf(output, URL_BUFFER_SIZE, "%s&offset=%d&length=%d", _baseUrl.c_str(), offset, CHUNK_SIZE);
 }
+
+#endif // ESP8266

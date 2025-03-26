@@ -5,9 +5,10 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
-// #include "common.h"
+#ifndef ESP8266
 #include "Libraries/airgradient-client/src/common.h"
 
+#include "esp_log.h"
 #include "airgradientOtaWifi.h"
 #include "airgradientOta.h"
 
@@ -128,3 +129,5 @@ void AirgradientOTAWifi::cleanupHttp(esp_http_client_handle_t client) {
   esp_http_client_close(client);
   esp_http_client_cleanup(client);
 }
+
+#endif // ESP8266
