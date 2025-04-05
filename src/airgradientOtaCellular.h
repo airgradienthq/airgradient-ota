@@ -12,12 +12,11 @@
 #include <string>
 
 #ifdef ARDUINO
-//! Somehow if compile using arduino and not include this. esp_log not come out.
-#include <Arduino.h>
+#include "Libraries/airgradient-client/src/cellularModule.h"
+#else
+#include "cellularModule.h"
 #endif
 
-#include "Libraries/airgradient-client/src/cellularModule.h"
-// #include "cellularModule.h"
 #include "airgradientOta.h"
 
 class AirgradientOTACellular : public AirgradientOTA {

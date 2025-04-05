@@ -10,15 +10,17 @@
 
 #ifndef ESP8266
 
-#include <string>
-
 #ifdef ARDUINO
-//! Somehow if compile using arduino and not include this. esp_log not come out.
+/**
+ * If compile using arduino, and Arduino.h no included, below error occur
+ * ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32c3/include/lwip/lwip/src/include/lwip/ip4_addr.h:63:37: error: expected ')' before numeric constant
+ * #define IPADDR_NONE         ((u32_t)0xffffffffUL)
+ */
 #include <Arduino.h>
 #endif
 
+#include <string>
 #include "esp_http_client.h"
-
 #include "airgradientOta.h"
 
 class AirgradientOTAWifi : public AirgradientOTA {

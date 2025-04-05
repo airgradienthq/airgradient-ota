@@ -8,8 +8,7 @@
 #ifndef ESP8266
 
 #include "airgradientOta.h"
-
-#include "esp_log.h"
+#include "agLogger.h"
 
 AirgradientOTA::AirgradientOTA() {}
 
@@ -40,17 +39,15 @@ std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &c
 }
 
 bool AirgradientOTA::init() {
-  esp_log_level_set(TAG, ESP_LOG_INFO);
-
   updatePartition_ = esp_ota_get_next_update_partition(NULL);
   if (updatePartition_ == NULL) {
-    ESP_LOGE(TAG, "Passive OTA partition not found");
+    AG_LOGE(TAG, "Passive OTA partition not found");
     return false;
   }
 
   esp_err_t err = esp_ota_begin(updatePartition_, OTA_SIZE_UNKNOWN, &_otaHandle);
   if (err != ESP_OK) {
-    ESP_LOGI(TAG, "Initiating OTA failed, error=%d", err);
+    AG_LOGI(TAG, "Initiating OTA failed, error=%d", err);
     return false;
   }
 
@@ -61,40 +58,40 @@ bool AirgradientOTA::init() {
 
 bool AirgradientOTA::write(const char *data, int size) {
   if (size == 0) {
-    ESP_LOGW(TAG, "No data to write");
+    AG_LOGW(TAG, "No data to write");
     return false;
   }
 
   esp_err_t err = esp_ota_write(_otaHandle, (const void *)data, size);
   if (err != ESP_OK) {
-    ESP_LOGW(TAG, "OTA write failed! err=0x%d", err);
+    AG_LOGW(TAG, "OTA write failed! err=0x%d", err);
     return false;
   }
 
   imageWritten = imageWritten + size;
-  ESP_LOGD(TAG, "Written image length: %d", imageWritten);
+  AG_LOGD(TAG, "Written image length: %d", imageWritten);
 
   return true;
 }
 
 bool AirgradientOTA::finish() {
-  ESP_LOGI(TAG, "Finishing... Total binary data length written: %d", imageWritten);
+  AG_LOGI(TAG, "Finishing... Total binary data length written: %d", imageWritten);
 
   // Finishing fota update
   esp_err_t err = esp_ota_end(_otaHandle);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Error: OTA end failed, image invalid! err=0x%d", err);
+    AG_LOGE(TAG, "Error: OTA end failed, image invalid! err=0x%d", err);
     return false;
   }
 
   // Set bootloader to load app from new app partition
   err = esp_ota_set_boot_partition(updatePartition_);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "Error: OTA set boot partition failed! err=0x%d", err);
+    AG_LOGE(TAG, "Error: OTA set boot partition failed! err=0x%d", err);
     return false;
   }
 
-  ESP_LOGI(TAG, "OTA successful, MAKE SURE TO REBOOT!");
+  AG_LOGI(TAG, "OTA successful, MAKE SURE TO REBOOT!");
 
   return true;
 }
@@ -102,7 +99,7 @@ bool AirgradientOTA::finish() {
 void AirgradientOTA::abort() {
   // Free ota handle when ota failed midway
   esp_ota_abort(_otaHandle);
-  ESP_LOGI(TAG, "OTA Aborted");
+  AG_LOGI(TAG, "OTA Aborted");
 }
 
 #endif // ESP8266

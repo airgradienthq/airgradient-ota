@@ -13,11 +13,6 @@
 #include <cstdint>
 #include <string>
 
-#ifdef ARDUINO
-//! Somehow if compile using pio and not include this. esp_log not come out.
-#include <Arduino.h>
-#endif
-
 #include "esp_ota_ops.h"
 
 class AirgradientOTA {

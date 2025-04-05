@@ -10,31 +10,32 @@
 #include <cstring>
 #include <string>
 
-#include "esp_log.h"
-#include "esp_ota_ops.h"
-
-// #include "common.h"
-// #include "cellularModule.h"
-#include "Libraries/airgradient-client/src/common.h"
-#include "Libraries/airgradient-client/src/cellularModule.h"
-
 #include "airgradientOtaCellular.h"
 #include "airgradientOta.h"
+#include "esp_ota_ops.h"
+#include "agLogger.h"
+
+#ifdef ARDUINO
+#include "Libraries/airgradient-client/src/common.h"
+#include "Libraries/airgradient-client/src/cellularModule.h"
+#else
+#include "common.h"
+#include "cellularModule.h"
+#endif
+
 
 AirgradientOTACellular::AirgradientOTACellular(CellularModule *cell) : cell_(cell) {}
 
 AirgradientOTA::OtaResult
 AirgradientOTACellular::updateIfAvailable(const std::string &sn,
                                           const std::string &currentFirmware) {
-  esp_log_level_set(TAG, ESP_LOG_DEBUG);
-
   // Sanity check
   if (cell_ == nullptr) {
-    ESP_LOGE(TAG, "Please initialize CelularCard first");
+    AG_LOGE(TAG, "Please initialize CelularCard first");
     return Skipped;
   }
 
-  ESP_LOGI(TAG, "Start OTA using cellular");
+  AG_LOGI(TAG, "Start OTA using cellular");
   // Initialize ota native api
   if (!init()) {
     return Failed;
@@ -51,13 +52,12 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   // TODO: Call http HEAD method to know total image length if needed
   int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb
 
-
-  ESP_LOGI(TAG, "Wait OTA until finish");
+  AG_LOGI(TAG, "Wait OTA until finish");
   unsigned long downloadStartTime = MILLIS();
   while (true) {
     // Build build url with chunk param and attempt download chunk image
     buildParams(imageOffset, urlBuffer);
-    ESP_LOGI(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
+    AG_LOGI(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
 
     if (imageOffset == 0) {
       // Notify caller that ota is starting
@@ -67,13 +67,13 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
     auto response = cell_->httpGet(urlBuffer);
     if (response.status != CellReturnStatus::Ok) {
       // TODO: This can be timeout from module or error, how to handle this?
-      ESP_LOGE(TAG, "Module not return OK when call httpGet()");
+      AG_LOGE(TAG, "Module not return OK when call httpGet()");
     }
 
     // Check response status code
     if (response.data.statusCode == 200) {
       if (response.data.bodyLen == 0) {
-        ESP_LOGW(TAG, "Response OK but body empty");
+        AG_LOGW(TAG, "Response OK but body empty");
         // TODO: What to do when status code success but body empty?
         continue; // Retry?
       }
@@ -88,21 +88,21 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
 
       // Check if received chunk size is at the end of the image size, hence its complete
       if (response.data.bodyLen < CHUNK_SIZE) {
-        ESP_LOGI(TAG, "Received remainder chunk (size: %d), applying image...",
+        AG_LOGI(TAG, "Received remainder chunk (size: %d), applying image...",
                  response.data.bodyLen);
         sendCallback(InProgress, "100"); // Send finish indicatation
         break;
       }
     } else if (response.data.statusCode == 204) {
-      ESP_LOGI(TAG, "Download image binary complete, applying image...");
+      AG_LOGI(TAG, "Download image binary complete, applying image...");
       sendCallback(InProgress, "100"); // Send finish indicatation
       break;
     } else if (response.data.statusCode == 304) {
-      ESP_LOGI(TAG, "Firmware is already up to date");
+      AG_LOGI(TAG, "Firmware is already up to date");
       result = AlreadyUpToDate;
       break;
     } else {
-      ESP_LOGE(TAG, "Firmware update skipped, the server returned %d", response.data.statusCode);
+      AG_LOGE(TAG, "Firmware update skipped, the server returned %d", response.data.statusCode);
       result = Skipped;
       break;
     }
@@ -122,7 +122,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
     DELAY_MS(10);
   }
 
-  ESP_LOGI(TAG, "Time taken to iterate download binaries in chunk %.2fs",
+  AG_LOGI(TAG, "Time taken to iterate download binaries in chunk %.2fs",
            ((float)MILLIS() - downloadStartTime) / 1000);
 
   delete[] urlBuffer;
