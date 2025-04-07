@@ -8,9 +8,9 @@
 #ifndef ESP8266
 #include "Libraries/airgradient-client/src/common.h"
 
-#include "esp_log.h"
 #include "airgradientOtaWifi.h"
 #include "airgradientOta.h"
+#include "agLogger.h"
 
 AirgradientOTAWifi::AirgradientOTAWifi() {}
 
@@ -27,7 +27,7 @@ AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &
   // Initialize http client
   _httpClient = esp_http_client_init(&_httpConfig);
   if (_httpClient == NULL) {
-    ESP_LOGE(TAG, "Failed to initialize http connection");
+    AG_LOGE(TAG, "Failed to initialize http connection");
     return Failed;
   }
 
@@ -35,19 +35,19 @@ AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &
   esp_err_t err = esp_http_client_open(_httpClient, 0);
   if (err != ESP_OK) {
     esp_http_client_cleanup(_httpClient);
-    ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
+    AG_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
     return Failed;
   }
   esp_http_client_fetch_headers(_httpClient);
 
   int statusCode = esp_http_client_get_status_code(_httpClient);
   if (statusCode == 304) {
-    ESP_LOGI(TAG, "Firmware is already up to date");
+    AG_LOGI(TAG, "Firmware is already up to date");
     cleanupHttp(_httpClient);
     sendCallback(AlreadyUpToDate, "");
     return AlreadyUpToDate;
   } else if (statusCode != 200) {
-    ESP_LOGW(TAG, "Firmware update skipped, the server returned %d", statusCode);
+    AG_LOGW(TAG, "Firmware update skipped, the server returned %d", statusCode);
     cleanupHttp(_httpClient);
     sendCallback(Skipped, "");
     return Skipped;
@@ -71,7 +71,7 @@ AirgradientOTA::OtaResult AirgradientOTAWifi::processImage() {
   // Initialize buffer to hold data from client socket
   char *buf = new char[OTA_BUF_SIZE];
   int totalImageSize = esp_http_client_get_content_length(_httpClient);
-  ESP_LOGI(TAG, "Image size %d bytes", totalImageSize);
+  AG_LOGI(TAG, "Image size %d bytes", totalImageSize);
 
   uint32_t lastCbCall = MILLIS();
   OtaResult result = InProgress;
@@ -79,10 +79,10 @@ AirgradientOTA::OtaResult AirgradientOTAWifi::processImage() {
     int recvSize = esp_http_client_read(_httpClient, buf, OTA_BUF_SIZE);
     if (recvSize == 0) {
       sendCallback(InProgress, "100");
-      ESP_LOGI(TAG, "Download iamge binary complete, applying image...");
+      AG_LOGI(TAG, "Download iamge binary complete, applying image...");
       break;
     } else if (recvSize < 0) {
-      ESP_LOGE(TAG, "HTTP data read error");
+      AG_LOGE(TAG, "HTTP data read error");
       result = Failed;
       break;
     }
