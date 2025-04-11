@@ -23,7 +23,6 @@
 #include "cellularModule.h"
 #endif
 
-
 AirgradientOTACellular::AirgradientOTACellular(CellularModule *cell) : cell_(cell) {}
 
 AirgradientOTA::OtaResult
@@ -34,40 +33,71 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
     AG_LOGE(TAG, "Please initialize CelularCard first");
     return Skipped;
   }
-
   AG_LOGI(TAG, "Start OTA using cellular");
-  // Initialize ota native api
-  if (!init()) {
-    return Failed;
-  }
 
   // Format the base url
   _baseUrl = buildUrl(sn, currentFirmware);
 
+  // Download with expected body length empty, just want to know if available or not
+  int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb
+  std::string url = _baseUrl + "&offset=0&length=0";
+  AG_LOGI(TAG, "First check if firmware update available");
+  AG_LOGI(TAG, "%s", url.c_str());
+
+  // TODO: Future improvement should use http HEAD method to also know the total image length
+  //   without receive response body
+  // Problem is i2c to serial bridge limitation, response header can go up to 500 bytes in 1 serial dump
+  auto response = cell_->httpGet(url);
+  if (response.status != CellReturnStatus::Ok) {
+    AG_LOGE(TAG, "Module not return OK when call httpGet()");
+    sendCallback(OtaResult::Failed, "");
+    return OtaResult::Failed;
+  }
+
+  if (response.data.statusCode == 304) {
+    AG_LOGI(TAG, "Firmware is already up to date");
+    sendCallback(OtaResult::AlreadyUpToDate, "");
+    return OtaResult::AlreadyUpToDate;
+  } else if (response.data.statusCode != 200) {
+    // Perhaps status code 400
+    AG_LOGE(TAG, "Firmware update skipped, the server returned %d", response.data.statusCode);
+    sendCallback(OtaResult::Skipped, "");
+    return OtaResult::Skipped;
+  }
+
+  // Notify caller that ota is starting
+  sendCallback(Starting, "");
+
+  return _performOta(totalImageSize);
+}
+
+AirgradientOTA::OtaResult AirgradientOTACellular::_performOta(int totalImageSize) {
   // Initialize related variable
   OtaResult result = OtaResult::InProgress;
   char *urlBuffer = new char[URL_BUFFER_SIZE];
   int imageOffset = 0;
 
-  // TODO: Call http HEAD method to know total image length if needed
-  int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb
+  // Initialize ota native api
+  if (!init()) {
+    sendCallback(OtaResult::Failed, "");
+    return OtaResult::Failed;
+  }
+
+  // Notify caller that ota is starting
+  sendCallback(InProgress, "0");
 
   AG_LOGI(TAG, "Wait OTA until finish");
   unsigned long downloadStartTime = MILLIS();
   while (true) {
     // Build build url with chunk param and attempt download chunk image
-    buildParams(imageOffset, urlBuffer);
+    _buildParams(imageOffset, urlBuffer);
     AG_LOGI(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
-
-    if (imageOffset == 0) {
-      // Notify caller that ota is starting
-      sendCallback(Starting, "");
-    }
 
     auto response = cell_->httpGet(urlBuffer);
     if (response.status != CellReturnStatus::Ok) {
-      // TODO: This can be timeout from module or error, how to handle this?
       AG_LOGE(TAG, "Module not return OK when call httpGet()");
+      result = Failed;
+      break;
     }
 
     // Check response status code
@@ -89,7 +119,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
       // Check if received chunk size is at the end of the image size, hence its complete
       if (response.data.bodyLen < CHUNK_SIZE) {
         AG_LOGI(TAG, "Received remainder chunk (size: %d), applying image...",
-                 response.data.bodyLen);
+                response.data.bodyLen);
         sendCallback(InProgress, "100"); // Send finish indicatation
         break;
       }
@@ -97,13 +127,9 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
       AG_LOGI(TAG, "Download image binary complete, applying image...");
       sendCallback(InProgress, "100"); // Send finish indicatation
       break;
-    } else if (response.data.statusCode == 304) {
-      AG_LOGI(TAG, "Firmware is already up to date");
-      result = AlreadyUpToDate;
-      break;
     } else {
-      AG_LOGE(TAG, "Firmware update skipped, the server returned %d", response.data.statusCode);
-      result = Skipped;
+      AG_LOGE(TAG, "Download image chunk failed, the server returned %d", response.data.statusCode);
+      result = Failed;
       break;
     }
 
@@ -123,7 +149,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   }
 
   AG_LOGI(TAG, "Time taken to iterate download binaries in chunk %.2fs",
-           ((float)MILLIS() - downloadStartTime) / 1000);
+          ((float)MILLIS() - downloadStartTime) / 1000);
 
   delete[] urlBuffer;
 
@@ -146,7 +172,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   return OtaResult::Success;
 }
 
-void AirgradientOTACellular::buildParams(int offset, char *output) {
+void AirgradientOTACellular::_buildParams(int offset, char *output) {
   // Clear the buffer to make sure the string later have string terminator
   memset(output, 0, URL_BUFFER_SIZE);
   // Format the enpoint
