@@ -54,6 +54,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
     return OtaResult::Failed;
   }
 
+  // Check if firmware update available
   if (response.data.statusCode == 304) {
     AG_LOGI(TAG, "Firmware is already up to date");
     sendCallback(OtaResult::AlreadyUpToDate, "");
@@ -83,7 +84,7 @@ AirgradientOTA::OtaResult AirgradientOTACellular::_performOta(int totalImageSize
     return OtaResult::Failed;
   }
 
-  // Notify caller that ota is starting
+  // Notify caller that ota is in progress
   sendCallback(InProgress, "0");
 
   AG_LOGI(TAG, "Wait OTA until finish");
