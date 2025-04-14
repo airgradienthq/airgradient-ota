@@ -35,7 +35,8 @@ public:
   OtaResult updateIfAvailable(const std::string &sn, const std::string &currentFirmware);
 
 private:
-  void buildParams(int offset, char *output);
+  OtaResult _performOta(int totalImageSize);
+  void _buildParams(int offset, char *output);
 };
 
 #endif // ESP8266
