@@ -49,7 +49,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   // Problem is i2c to serial bridge limitation, response header can go up to 500 bytes in 1 serial dump
   auto response = cell_->httpGet(url);
   if (response.status != CellReturnStatus::Ok) {
-    AG_LOGE(TAG, "Module not return OK when call httpGet()");
+    AG_LOGE(TAG, "Module does not return OK to httpGet()");
     sendCallback(OtaResult::Failed, "");
     return OtaResult::Failed;
   }
@@ -86,16 +86,16 @@ AirgradientOTA::OtaResult AirgradientOTACellular::_performOta(int totalImageSize
   // Notify caller that ota is starting
   sendCallback(InProgress, "0");
 
-  AG_LOGI(TAG, "Wait OTA until finish");
+  AG_LOGI(TAG, "Wait until OTA has finished");
   unsigned long downloadStartTime = MILLIS();
   while (true) {
-    // Build build url with chunk param and attempt download chunk image
+    // Build url with chunk param and attempt download chunk image
     _buildParams(imageOffset, urlBuffer);
     AG_LOGI(TAG, ">> imageOffset %d, with endpoint %s", imageOffset, urlBuffer);
 
     auto response = cell_->httpGet(urlBuffer);
     if (response.status != CellReturnStatus::Ok) {
-      AG_LOGE(TAG, "Module not return OK when call httpGet()");
+      AG_LOGE(TAG, "Module does not return OK to httpGet()");
       result = Failed;
       break;
     }
@@ -128,7 +128,7 @@ AirgradientOTA::OtaResult AirgradientOTACellular::_performOta(int totalImageSize
       sendCallback(InProgress, "100"); // Send finish indicatation
       break;
     } else {
-      AG_LOGE(TAG, "Download image chunk failed, the server returned %d", response.data.statusCode);
+      AG_LOGE(TAG, "Download of image chunk failed, the server returned %d", response.data.statusCode);
       result = Failed;
       break;
     }
