@@ -27,7 +27,8 @@ AirgradientOTACellular::AirgradientOTACellular(CellularModule *cell) : cell_(cel
 
 AirgradientOTA::OtaResult
 AirgradientOTACellular::updateIfAvailable(const std::string &sn,
-                                          const std::string &currentFirmware) {
+                                          const std::string &currentFirmware,
+                                          std::string httpDomain) {
   // Sanity check
   if (cell_ == nullptr) {
     AG_LOGE(TAG, "Please initialize CelularCard first");
@@ -36,7 +37,8 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
   AG_LOGI(TAG, "Start OTA using cellular");
 
   // Format the base url
-  _baseUrl = buildUrl(sn, currentFirmware);
+  _baseUrl = buildUrl(sn, currentFirmware, httpDomain);
+  AG_LOGI(TAG, "%s", _baseUrl.c_str());
 
   // Download with expected body length empty, just want to know if available or not
   int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb

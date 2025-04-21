@@ -17,9 +17,10 @@ AirgradientOTAWifi::AirgradientOTAWifi() {}
 AirgradientOTAWifi::~AirgradientOTAWifi() {}
 
 AirgradientOTA::OtaResult
-AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &currentFirmware) {
+AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &currentFirmware, std::string httpDomain) {
   // Format the base url
-  std::string url = buildUrl(sn, currentFirmware);
+  std::string url = buildUrl(sn, currentFirmware, httpDomain);
+  AG_LOGI(TAG, "%s", url.c_str());
 
   // Initialize http configuration
   _httpConfig.url = url.c_str();
