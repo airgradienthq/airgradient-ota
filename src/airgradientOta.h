@@ -10,6 +10,8 @@
 
 #ifndef ESP8266
 
+#define AIRGRADIENT_HTTP_DOMAIN "hw.airgradient.com"
+
 #include <cstdint>
 #include <string>
 
@@ -33,7 +35,8 @@ public:
   void setHandlerCallback(OtaHandlerCallback_t callback);
 
   // Methods that should be implemented by derived class
-  virtual OtaResult updateIfAvailable(const std::string &sn, const std::string &currentFirmware);
+  virtual OtaResult updateIfAvailable(const std::string &sn, const std::string &currentFirmware,
+                                      std::string httpDomain = AIRGRADIENT_HTTP_DOMAIN);
 
 protected:
   // OTA related implementation in base class that will only called by
@@ -42,7 +45,7 @@ protected:
   uint32_t imageWritten = 0;
 
   void sendCallback(OtaResult result, const char *message);
-  std::string buildUrl(const std::string &sn, const std::string &currentFirmware);
+  std::string buildUrl(const std::string &sn, const std::string &currentFirmware, std::string httpDomain);
   bool init();
   bool write(const char *data, int size);
   bool finish();

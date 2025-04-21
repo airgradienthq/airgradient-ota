@@ -34,7 +34,9 @@ public:
   AirgradientOTAWifi();
   ~AirgradientOTAWifi();
 
-  OtaResult updateIfAvailable(const std::string &sn, const std::string &currentFirmware);
+  OtaResult updateIfAvailable(const std::string &sn,
+                              const std::string &currentFirmware,
+                              std::string httpDomain = AIRGRADIENT_HTTP_DOMAIN);
 
 private:
   OtaResult processImage();
