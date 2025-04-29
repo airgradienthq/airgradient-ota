@@ -5,6 +5,7 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
+#ifdef ARDUINO
 #ifndef ESP8266
 #include "Libraries/airgradient-client/src/common.h"
 
@@ -132,3 +133,4 @@ void AirgradientOTAWifi::cleanupHttp(esp_http_client_handle_t client) {
 }
 
 #endif // ESP8266
+#endif // ARDUINO
