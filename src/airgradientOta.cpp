@@ -35,7 +35,7 @@ std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &c
   char url[150] = {0};
   // sprintf(url, "http://%s/sensors/airgradient:%s/generic/os/firmware.bin?current_firmware=%s",
   //         httpDomain.c_str(), sn.c_str(), currentFirmware.c_str());
-  sprintf(url, "http://%s//sensors/%s/max/firmware/firmware.bin?current_firmware=%s",
+  sprintf(url, "http://%s/sensors/%s/max/firmware.bin?current_firmware=%s",
           httpDomain.c_str(), sn.c_str(), currentFirmware.c_str());
 
   return std::string(url);
