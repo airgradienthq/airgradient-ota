@@ -10,7 +10,7 @@
 
 #ifndef ESP8266
 
-#define AIRGRADIENT_HTTP_DOMAIN "hw-int.airgradient.com"
+#define AIRGRADIENT_HTTP_DOMAIN "hw.airgradient.com"
 
 #include <cstdint>
 #include <string>
