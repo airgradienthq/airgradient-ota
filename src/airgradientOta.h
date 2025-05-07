@@ -41,7 +41,7 @@ public:
 protected:
   // OTA related implementation in base class that will only called by
   // derived class
-  OtaHandlerCallback_t _callback;
+  OtaHandlerCallback_t _callback = nullptr;
   int imageWritten = 0;
 
   void sendCallback(OtaResult result, const char *message);
