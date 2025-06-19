@@ -15,7 +15,8 @@ AirgradientOTA::AirgradientOTA() {}
 AirgradientOTA::~AirgradientOTA() {}
 
 AirgradientOTA::OtaResult AirgradientOTA::updateIfAvailable(const std::string &sn,
-                                                            const std::string &currentFirmware, std::string httpDomain) {
+                                                            const std::string &currentFirmware,
+                                                            std::string httpDomain) {
   return Skipped;
 }
 
@@ -27,12 +28,19 @@ void AirgradientOTA::sendCallback(OtaResult result, const char *message) {
   }
 }
 
-std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &currentFirmware, std::string httpDomain) {
-  // "http://hw.airgradient.com/sensors/airgradient:aabbccddeeff/generic/os/firmware.bin?offset=386000&length=2000"
+std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &currentFirmware,
+                                     std::string httpDomain) {
   // NOTE: Careful here when changing the url
-  char url[150] = {0};
-  sprintf(url, "http://%s/sensors/airgradient:%s/generic/os/firmware.bin?current_firmware=%s", 
+  char url[200] = {0};
+#ifdef ARDUINO
+  // OneOpenAir
+  sprintf(url, "http://%s/sensors/airgradient:%s/generic/os/firmware.bin?current_firmware=%s",
           httpDomain.c_str(), sn.c_str(), currentFirmware.c_str());
+#else
+  // OpenAir MAX
+  sprintf(url, "http://%s/sensors/%s/max/firmware.bin?current_firmware=%s", httpDomain.c_str(),
+          sn.c_str(), currentFirmware.c_str());
+#endif
 
   return std::string(url);
 }
