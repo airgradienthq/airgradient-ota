@@ -23,11 +23,11 @@
 #include "cellularModule.h"
 #endif
 
-AirgradientOTACellular::AirgradientOTACellular(CellularModule *cell) : cell_(cell) {}
+AirgradientOTACellular::AirgradientOTACellular(CellularModule *cell, const std::string &iccid)
+    : cell_(cell), _iccid(iccid) {}
 
 AirgradientOTA::OtaResult
-AirgradientOTACellular::updateIfAvailable(const std::string &sn,
-                                          const std::string &currentFirmware,
+AirgradientOTACellular::updateIfAvailable(const std::string &sn, const std::string &currentFirmware,
                                           std::string httpDomain) {
   // Sanity check
   if (cell_ == nullptr) {
@@ -42,7 +42,7 @@ AirgradientOTACellular::updateIfAvailable(const std::string &sn,
 
   // Download with expected body length empty, just want to know if available or not
   int totalImageSize = 1400000; // NOTE: This is assumption 1.4mb
-  std::string url = _baseUrl + "&offset=0&length=0";
+  std::string url = _baseUrl + "&offset=0&length=0&iccid=" + _iccid;
   AG_LOGI(TAG, "First check if firmware update available");
   AG_LOGI(TAG, "%s", url.c_str());
 
@@ -131,7 +131,8 @@ AirgradientOTA::OtaResult AirgradientOTACellular::_performOta(int totalImageSize
       sendCallback(InProgress, "100"); // Send finish indicatation
       break;
     } else {
-      AG_LOGE(TAG, "Download of image chunk failed, the server returned %d", response.data.statusCode);
+      AG_LOGE(TAG, "Download of image chunk failed, the server returned %d",
+              response.data.statusCode);
       result = Failed;
       break;
     }
