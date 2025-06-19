@@ -30,7 +30,6 @@ void AirgradientOTA::sendCallback(OtaResult result, const char *message) {
 
 std::string AirgradientOTA::buildUrl(const std::string &sn, const std::string &currentFirmware,
                                      std::string httpDomain) {
-  // "http://hw.airgradient.com/sensors/airgradient:aabbccddeeff/generic/os/firmware.bin?offset=386000&length=2000"
   // NOTE: Careful here when changing the url
   char url[200] = {0};
 #ifdef ARDUINO
