@@ -29,14 +29,14 @@ private:
   std::string _baseUrl;
 
 public:
-  AirgradientOTACellular(CellularModule *cell);
+  AirgradientOTACellular(CellularModule *cell, const std::string &iccid);
   ~AirgradientOTACellular() {};
 
-  OtaResult updateIfAvailable(const std::string &sn,
-                              const std::string &currentFirmware,
+  OtaResult updateIfAvailable(const std::string &sn, const std::string &currentFirmware,
                               std::string httpDomain = AIRGRADIENT_HTTP_DOMAIN);
 
 private:
+  std::string _iccid = "";
   OtaResult _performOta(int totalImageSize);
   void _buildParams(int offset, char *output);
 };
