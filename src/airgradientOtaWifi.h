@@ -27,7 +27,7 @@ class AirgradientOTAWifi : public AirgradientOTA {
 private:
   const char *const TAG = "OTAWifi";
   esp_http_client_handle_t _httpClient = NULL;
-  esp_http_client_config_t _httpConfig = {0};
+  esp_http_client_config_t _httpConfig = {};
   const int OTA_BUF_SIZE = 1024;
 
 public:
