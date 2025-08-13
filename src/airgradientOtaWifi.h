@@ -8,7 +8,6 @@
 #ifndef AIRGRADIENT_OTA_WIFI_H
 #define AIRGRADIENT_OTA_WIFI_H
 
-#ifdef ARDUINO
 #ifndef ESP8266
 
 #ifdef ARDUINO
@@ -45,5 +44,4 @@ private:
 };
 
 #endif // ESP8266
-#endif // ARDUINO
 #endif // !AIRGRADIENT_OTA_WIFI_H

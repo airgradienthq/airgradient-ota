@@ -5,9 +5,13 @@
  * CC BY-SA 4.0 Attribution-ShareAlike 4.0 International License
  */
 
-#ifdef ARDUINO
 #ifndef ESP8266
+
+#ifdef ARDUINO
 #include "Libraries/airgradient-client/src/common.h"
+#else
+#include "common.h"
+#endif
 
 #include "airgradientOtaWifi.h"
 #include "airgradientOta.h"
@@ -17,8 +21,9 @@ AirgradientOTAWifi::AirgradientOTAWifi() {}
 
 AirgradientOTAWifi::~AirgradientOTAWifi() {}
 
-AirgradientOTA::OtaResult
-AirgradientOTAWifi::updateIfAvailable(const std::string &sn, const std::string &currentFirmware, std::string httpDomain) {
+AirgradientOTA::OtaResult AirgradientOTAWifi::updateIfAvailable(const std::string &sn,
+                                                                const std::string &currentFirmware,
+                                                                std::string httpDomain) {
   // Format the base url
   std::string url = buildUrl(sn, currentFirmware, httpDomain);
   AG_LOGI(TAG, "%s", url.c_str());
@@ -81,7 +86,7 @@ AirgradientOTA::OtaResult AirgradientOTAWifi::processImage() {
     int recvSize = esp_http_client_read(_httpClient, buf, OTA_BUF_SIZE);
     if (recvSize == 0) {
       sendCallback(InProgress, "100");
-      AG_LOGI(TAG, "Download iamge binary complete, applying image...");
+      AG_LOGI(TAG, "Download image binary complete, applying image...");
       break;
     } else if (recvSize < 0) {
       AG_LOGE(TAG, "HTTP data read error");
@@ -99,6 +104,9 @@ AirgradientOTA::OtaResult AirgradientOTAWifi::processImage() {
     // Send callback only every 250ms
     if ((MILLIS() - lastCbCall) > 250) {
       int percent = (imageWritten * 100) / totalImageSize;
+      if (_callback == nullptr) {
+        AG_LOGI(TAG, "progress=%d%%", percent);
+      }
       sendCallback(InProgress, std::to_string(percent).c_str());
       lastCbCall = MILLIS();
     }
@@ -133,4 +141,3 @@ void AirgradientOTAWifi::cleanupHttp(esp_http_client_handle_t client) {
 }
 
 #endif // ESP8266
-#endif // ARDUINO
